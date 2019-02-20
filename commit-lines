@@ -1,0 +1,17 @@
+#!/bin/sh
+
+start_line=$1
+end_line=$2
+file_path=$3
+
+mode=$(git ls-files -s $file_path | awk '{print $1}')
+echo "mode is $mode"
+blob_id=$(
+    (
+        head -n $(expr $start_line - 1) $file_path
+        cat
+        tail -n +$(expr $end_line + 1) $file_path
+        ) | git hash-object -w --stdin
+    )
+    echo "blobid $blob_id"
+exec git update-index --cacheinfo $mode $blob_id $file_path
